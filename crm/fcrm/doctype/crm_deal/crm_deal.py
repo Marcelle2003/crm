@@ -46,28 +46,39 @@ class CRMDeal(Document):
 					d.is_primary = 0
 
 	def set_primary_email_mobile_no(self):
-		if not self.contacts:
-			self.email = ""
-			self.mobile_no = ""
-			self.phone = ""
-			return
-
-		if len([contact for contact in self.contacts if contact.is_primary]) > 1:
-			frappe.throw(_("Only one {0} can be set as primary.").format(frappe.bold("Contact")))
-
-		primary_contact_exists = False
-		for d in self.contacts:
-			if d.is_primary == 1:
-				primary_contact_exists = True
-				self.email = d.email.strip() if d.email else ""
-				self.mobile_no = d.mobile_no.strip() if d.mobile_no else ""
-				self.phone = d.phone.strip() if d.phone else ""
-				break
-
-		if not primary_contact_exists:
-			self.email = ""
-			self.mobile_no = ""
-			self.phone = ""
+	    if not self.contacts:
+	        self.email = ""
+	        self.mobile_no = ""
+	        self.phone = ""
+	        return
+	
+	    if len([contact for contact in self.contacts if contact.is_primary]) > 1:
+	        frappe.throw(_("Only one {0} can be set as primary.").format(frappe.bold("Contact")))
+	
+	    primary_contact_exists = False
+	    for d in self.contacts:
+	        if d.is_primary == 1:
+	            primary_contact_exists = True
+	            self.email = d.email.strip() if d.email else ""
+	
+	            if d.mobile_no:
+	                raw_mobile = d.mobile_no.strip().replace(" ", "").replace("-", "")
+	                if raw_mobile.startswith("0"):
+	                    self.mobile_no = "27" + raw_mobile[1:]
+	                elif raw_mobile.startswith("+27"):
+	                    self.mobile_no = raw_mobile.replace("+", "")
+	                else:
+	                    self.mobile_no = raw_mobile
+	            else:
+	                self.mobile_no = ""
+	
+	            self.phone = d.phone.strip() if d.phone else ""
+	            break
+	
+	    if not primary_contact_exists:
+	        self.email = ""
+	        self.mobile_no = ""
+	        self.phone = ""
 
 	def assign_agent(self, agent):
 		if not agent:
